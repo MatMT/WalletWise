@@ -1,23 +1,39 @@
+import { CircularProgressbar, buildStyles } from 'react-circular-progressbar'
+import { useBudget } from "../hooks/useBudget";
 import AmountDisplay from "./AmountDisplay";
+import 'react-circular-progressbar/dist/styles.css';
 
 export default function BudgetTracker() {
+  const { state, dispatch, remainingBudget, totalExpenses } = useBudget();
+  const percentage = +((totalExpenses / state.budget) * 100).toFixed(2);
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
       <div className="flex justify-center">
-        <img src="WalletWise/grafico.jpg" alt="Gráfica de gatos" />
+        <CircularProgressbar
+          value={percentage}
+          styles={buildStyles({
+            pathColor: percentage >= 90 ? "#DC2626" : '#3B82F6',
+            trailColor: '#F5F5F5',
+            textColor: percentage >= 90 ? "#DC2626" : '#3B82F6',
+            textSize: '24px',
+          })}
+          text={`${percentage}%`}
+        />
       </div>
 
       <div className="flex flex-col justify-center items-center gap-8">
         <button
           type="button"
           className="bg-pink-600 p-2 text-white uppercase font-bold w-full rounded-lg"
+          onClick={() => {dispatch({ type: 'reset-app' })}}
         >
           Reset App
         </button>
 
-        <AmountDisplay label="Budget" amount={300} />
-        <AmountDisplay label="Available" amount={200} />
-        <AmountDisplay label="Spent" amount={100} />
+        <AmountDisplay label="Budget" amount={state.budget} />
+        <AmountDisplay label="Available" amount={remainingBudget} />
+        <AmountDisplay label="Spent" amount={totalExpenses} />
       </div>
     </div>
   );

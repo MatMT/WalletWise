@@ -17,7 +17,8 @@ export default function ExpenseForm() {
   });
 
   const [error, setError] = useState("");
-  const { dispatch, state } = useBudget();
+  const [previousAmount, setPreviousAmount] = useState(0);
+  const { dispatch, state, remainingBudget } = useBudget();
 
   useEffect(() => {
     if (state.editingId) {
@@ -26,6 +27,7 @@ export default function ExpenseForm() {
       )[0];
 
       setExpense(editingExpense);
+      setPreviousAmount(editingExpense.amount);
     }
   }, [state.editingId]);
 
@@ -53,6 +55,11 @@ export default function ExpenseForm() {
       return;
     }
 
+    if ((expense.amount - previousAmount) > remainingBudget) {
+      setError("The expense amount exceeds the remaining budget");
+      return;
+    }
+
     // If there is no error
     setError("");
 
@@ -73,6 +80,7 @@ export default function ExpenseForm() {
       category: "",
       date: new Date(),
     });
+    setPreviousAmount(0);
   };
 
   return (
@@ -110,6 +118,7 @@ export default function ExpenseForm() {
           name="amount"
           onChange={handleChange}
           value={expense.amount}
+          step={0.01}
         />
       </div>
 
@@ -124,7 +133,7 @@ export default function ExpenseForm() {
           onChange={handleChange}
           value={expense.category}
         >
-          <option value="" disabled >
+          <option value="" disabled>
             -- Select --
           </option>
           {categories.map((category) => (
