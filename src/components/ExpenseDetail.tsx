@@ -10,6 +10,7 @@ import { formatDate } from "../helpers";
 import type { Expense } from "../types";
 import AmountDisplay from "./AmountDisplay";
 import { categories } from "../data/categories";
+import { useBudget } from "../hooks/useBudget";
 import "react-swipeable-list/dist/styles.css";
 
 type ExpenseDetailProps = {
@@ -17,6 +18,8 @@ type ExpenseDetailProps = {
 };
 
 export default function ExpenseDetail({ expense }: ExpenseDetailProps) {
+  const { dispatch } = useBudget();
+
   const categoryInfo = useMemo(
     () => categories.filter((cat) => cat.id === expense.category)[0],
     [expense]
@@ -24,27 +27,40 @@ export default function ExpenseDetail({ expense }: ExpenseDetailProps) {
 
   const leadingActions = () => (
     <LeadingActions>
-        <SwipeAction onClick={() => {}}>
-            Update
-        </SwipeAction>
+      <SwipeAction
+        onClick={() =>
+          dispatch({ type: "get-expense-by-id", payload: { id: expense.id } })
+        }
+      >
+        Update
+      </SwipeAction>
     </LeadingActions>
   );
 
   const trailingActions = () => (
     <TrailingActions>
-        <SwipeAction onClick={() => {}}>
-            Delete
-        </SwipeAction>
+      <SwipeAction
+        onClick={() =>
+          dispatch({ type: "remove-expense", payload: { id: expense.id } })
+        }
+        destructive={true}
+      >
+        Delete
+      </SwipeAction>
     </TrailingActions>
   );
 
   return (
     <SwipeableList>
-      <SwipeableListItem maxSwipe={30} leadingActions={leadingActions()} trailingActions={trailingActions()}>
-        <div className="bg-white shadow-lg p-10 w-full border-b border-gray-200 flex gap-5 items-center">
+      <SwipeableListItem
+        maxSwipe={1}
+        leadingActions={leadingActions()}
+        trailingActions={trailingActions()}
+      >
+        <div className="bg-white shadow-lg p-5 w-full border-b border-gray-200 flex gap-5 items-center">
           <div>
             <img
-              src={`WalletWise/icono_${categoryInfo.icon}.svg`}
+              src={`/icono_${categoryInfo.icon}.svg`}
               alt="Expense Icon"
               className="w-20"
             />
