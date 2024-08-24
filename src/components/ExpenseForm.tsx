@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
 import { categories } from "../data/categories";
 import DatePicker from "react-date-picker";
 import "react-calendar/dist/Calendar.css";
@@ -17,7 +17,17 @@ export default function ExpenseForm() {
   });
 
   const [error, setError] = useState("");
-  const { dispatch } = useBudget();
+  const { dispatch, state } = useBudget();
+
+  useEffect(() => {
+    if (state.editingId) {
+      const editingExpense = state.expenses.filter(
+        (currentExpense) => currentExpense.id === state.editingId
+      )[0];
+
+      setExpense(editingExpense);
+    }
+  }, [state.editingId]);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -45,7 +55,16 @@ export default function ExpenseForm() {
 
     // If there is no error
     setError("");
-    dispatch({ type: "add-expense", payload: { expense } });
+
+    // Agrear o actualizar el gasto
+    if (state.editingId) {
+      dispatch({
+        type: "update-expense",
+        payload: { expense: { id: state.editingId, ...expense } },
+      });
+    } else {
+      dispatch({ type: "add-expense", payload: { expense } });
+    }
 
     // Reset the state
     setExpense({
@@ -59,7 +78,7 @@ export default function ExpenseForm() {
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
       <legend className="uppercase text-center text-2xl font-black border-b-4 py-2 border-blue-500">
-        New Expense
+        {state.editingId ? "Update Expense" : "Add Expense"}
       </legend>
 
       {error && <ErrorMessage>{error}</ErrorMessage>}
@@ -105,7 +124,7 @@ export default function ExpenseForm() {
           onChange={handleChange}
           value={expense.category}
         >
-          <option value="" disabled selected>
+          <option value="" disabled >
             -- Select --
           </option>
           {categories.map((category) => (
@@ -130,7 +149,7 @@ export default function ExpenseForm() {
       <input
         type="submit"
         className="bg-blue-600 cursor-pointer w-full p-2 text-white hover:bg-blue-700 mt-4 uppercase rounded-lg"
-        value="Register Expense"
+        value="Save Expense"
       />
     </form>
   );
